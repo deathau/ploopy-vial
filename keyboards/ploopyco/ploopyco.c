@@ -63,10 +63,12 @@ uint16_t          dpi_array[] = PLOOPY_DPI_OPTIONS;
 #define DPI_OPTION_SIZE ARRAY_SIZE(dpi_array)
 
 // Trackball State
-bool  is_scroll_clicked    = false;
-bool  is_drag_scroll       = false;
-float scroll_accumulated_h = 0;
-float scroll_accumulated_v = 0;
+bool  is_scroll_clicked     = false;
+bool  is_drag_scroll        = false;
+bool  is_drag_scroll_locked = false;
+bool  is_hscroll_enabled    = false;
+float scroll_accumulated_h  = 0;
+float scroll_accumulated_v  = 0;
 
 #ifdef ENCODER_ENABLE
 uint16_t lastScroll        = 0; // Previous confirmed wheel event
@@ -128,8 +130,34 @@ void encoder_driver_task(void) {
 }
 #endif
 
+void toggle_hscroll(void) {
+    is_hscroll_enabled ^= 1;
+}
+
+void disable_hscroll(void) {
+    is_hscroll_enabled = false;
+}
+
+void enable_hscroll(void) {
+    if (!is_hscroll_enabled)
+        is_hscroll_enabled ^= 1;
+}
+
 void toggle_drag_scroll(void) {
     is_drag_scroll ^= 1;
+}
+
+void toggle_drag_scroll_lock(void) {
+    is_drag_scroll = is_drag_scroll_locked = is_drag_scroll_locked ^ 1;
+    /*
+    if (is_drag_scroll_locked) {
+        is_drag_scroll_locked = false;
+        is_drag_scroll = false;
+    } else {
+        is_drag_scroll_locked = true;
+        is_drag_scroll = true;
+    }
+    */
 }
 
 void cycle_dpi(void) {
@@ -140,11 +168,15 @@ void cycle_dpi(void) {
 
 report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
     if (is_drag_scroll) {
-        scroll_accumulated_h += (float)mouse_report.x / PLOOPY_DRAGSCROLL_DIVISOR_H;
+        if (is_hscroll_enabled) {
+            scroll_accumulated_h += (float)mouse_report.x / PLOOPY_DRAGSCROLL_DIVISOR_H;
+        }
         scroll_accumulated_v += (float)mouse_report.y / PLOOPY_DRAGSCROLL_DIVISOR_V;
 
         // Assign integer parts of accumulated scroll values to the mouse report
-        mouse_report.h = (int8_t)scroll_accumulated_h;
+        if (is_hscroll_enabled) {
+            mouse_report.h = (int8_t)scroll_accumulated_h;
+        }
 #ifdef PLOOPY_DRAGSCROLL_INVERT
         mouse_report.v = -(int8_t)scroll_accumulated_v;
 #else
@@ -187,14 +219,34 @@ bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
         cycle_dpi();
     }
 
+    if (keycode == TOGGLE_DRAG_SCROLL_LOCK && record->event.pressed) {
+        toggle_drag_scroll_lock();
+    }
+
     if (keycode == DRAG_SCROLL) {
-#ifdef PLOOPY_DRAGSCROLL_MOMENTARY
-        is_drag_scroll = record->event.pressed;
-#else
-        if (record->event.pressed) {
-            toggle_drag_scroll();
+        if (is_drag_scroll_locked) {
+            if (record->event.pressed) {
+                toggle_drag_scroll();
+            }
+        } else {
+            is_drag_scroll = record->event.pressed;
         }
-#endif
+    }
+
+    if (keycode == TOGGLE_HSCROLL) {
+        if (record->event.pressed) {
+            toggle_hscroll();
+        }
+    }
+    if (keycode == DISABLE_HSCROLL) {
+        if (record->event.pressed) {
+            disable_hscroll();
+        }
+    }
+    if (keycode == ENABLE_HSCROLL) {
+        if (record->event.pressed) {
+            enable_hscroll();
+        }
     }
 
     return true;

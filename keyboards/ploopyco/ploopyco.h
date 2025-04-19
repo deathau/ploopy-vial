@@ -33,9 +33,17 @@ extern uint16_t          dpi_array[];
 enum ploopy_keycodes {
     DPI_CONFIG = QK_KB_0,
     DRAG_SCROLL,
+    TOGGLE_DRAG_SCROLL_LOCK,
+    TOGGLE_HSCROLL,
+    DISABLE_HSCROLL,
+    ENABLE_HSCROLL,
 };
 
 bool encoder_update_user(uint8_t index, bool clockwise);
 bool encoder_update_kb(uint8_t index, bool clockwise);
 void toggle_drag_scroll(void);
+void toggle_drag_scroll_lock(void);
+void toggle_hscroll(void);
+void disable_hscroll(void);
+void enable_hscroll(void);
 void cycle_dpi(void);

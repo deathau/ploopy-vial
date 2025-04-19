@@ -5,7 +5,11 @@
   "lighting": "none",
   "customKeycodes": [
     {"name": "DPI Config", "title": "DPI Config", "shortName": "DPI"},
-    {"name": "Drag Scroll", "title": "Drag Scroll", "shortName": "Drag\nScrl"}
+    {"name": "Drag Scroll", "title": "Drag Scroll", "shortName": "Drag\nScrl"},
+    {"name": "Drag Scroll Lock Toggle", "title": "Drag Scroll Lock Toggle", "shortName": "Dslk\ntogl"},
+    {"name": "Horizontal Scroll Toggle", "title": "Horizontal Scroll Toggle", "shortName": "Hscl\ntogl"},
+    {"name": "Disable Horizontal Scroll", "title": "Disable Horizontal Scroll", "shortName": "Hscl\noff"},
+    {"name": "Enable Horizontal Scroll", "title": "Enable Horizontal Scroll", "shortName": "Hscl\non"}
   ],
   "matrix": {"rows": 1, "cols": 6},
   "layouts": {
