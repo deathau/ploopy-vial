@@ -37,6 +37,9 @@ enum ploopy_keycodes {
     TOGGLE_HSCROLL,
     DISABLE_HSCROLL,
     ENABLE_HSCROLL,
+    TOGGLE_HVSCROLL,
+    DISABLE_HVSCROLL,
+    ENABLE_HVSCROLL
 };
 
 bool encoder_update_user(uint8_t index, bool clockwise);

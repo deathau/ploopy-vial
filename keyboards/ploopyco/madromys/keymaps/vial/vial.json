@@ -6,10 +6,13 @@
   "customKeycodes": [
     {"name": "DPI Config", "title": "DPI Config", "shortName": "DPI"},
     {"name": "Drag Scroll", "title": "Drag Scroll", "shortName": "Drag\nScrl"},
-    {"name": "Drag Scroll Lock Toggle", "title": "Drag Scroll Lock Toggle", "shortName": "Dslk\ntogl"},
-    {"name": "Horizontal Scroll Toggle", "title": "Horizontal Scroll Toggle", "shortName": "Hscl\ntogl"},
-    {"name": "Disable Horizontal Scroll", "title": "Disable Horizontal Scroll", "shortName": "Hscl\noff"},
-    {"name": "Enable Horizontal Scroll", "title": "Enable Horizontal Scroll", "shortName": "Hscl\non"}
+    {"name": "Drag Scroll Lock Toggle", "title": "Drag Scroll Lock Toggle", "shortName": "Dslk\nTogl"},
+    {"name": "Horizontal Scroll Toggle", "title": "Horizontal Scroll Toggle", "shortName": "Hscl\nTogl"},
+    {"name": "Disable Horizontal Scroll", "title": "Disable Horizontal Scroll", "shortName": "Hscl\nOff"},
+    {"name": "Enable Horizontal Scroll", "title": "Enable Horizontal Scroll", "shortName": "Hscl\nOn"},
+    {"name": "Toggle Single-axis Scroll", "title": "Toggle Single-axis Scroll", "shortName": "HVscl\nTogl"},
+    {"name": "Disable Single-axis Scroll", "title": "Disable Single-axis Scroll", "shortName": "HVscl\nOff"},
+    {"name": "Enable Single-axis Scroll", "title": "Enable Single-axis Scroll", "shortName": "HVscl\nOn"}
   ],
   "matrix": {"rows": 1, "cols": 6},
   "layouts": {

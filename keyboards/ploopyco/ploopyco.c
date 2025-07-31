@@ -45,6 +45,23 @@
 #ifndef PLOOPY_DPI_DEFAULT
 #    define PLOOPY_DPI_DEFAULT 0
 #endif
+#ifndef PLC_HVSCROLL_DELAY_DIST_SQUARED
+#    define PLC_HVSCROLL_DELAY_DIST_SQUARED 64
+#endif
+#ifndef PLC_HVSCROLL_SLOPE_BOUNDS_RIGHT
+#    define PLC_HVSCROLL_SLOPE_BOUNDS_RIGHT \
+        { -1, 1 }
+#endif
+#ifndef PLC_HVSCROLL_SLOPE_BOUNDS_LEFT
+#    define PLC_HVSCROLL_SLOPE_BOUNDS_LEFT \
+        { -1, 1 }
+#endif
+#ifndef PLC_ENABLE_HSCROLL
+#    define PLC_ENABLE_HSCROLL true
+#endif
+#ifndef PLC_ENABLE_HVSCROLL
+#    define PLC_ENABLE_HVSCROLL true
+#endif
 #ifndef PLOOPY_DRAGSCROLL_DIVISOR_H
 #    define PLOOPY_DRAGSCROLL_DIVISOR_H 8.0
 #endif
@@ -65,10 +82,22 @@ uint16_t          dpi_array[] = PLOOPY_DPI_OPTIONS;
 // Trackball State
 bool  is_scroll_clicked     = false;
 bool  is_drag_scroll        = false;
-bool  is_drag_scroll_locked = false;
-bool  is_hscroll_enabled    = false;
+#ifdef PLOOPY_DRAGSCROLL_MOMENTARY
+bool is_drag_scroll_locked = false;
+#else
+bool  is_drag_scroll_locked = true;
+#endif
+bool  is_hscroll_enabled    = PLC_ENABLE_HSCROLL;
 float scroll_accumulated_h  = 0;
 float scroll_accumulated_v  = 0;
+
+bool is_hvscroll_enabled = PLC_ENABLE_HVSCROLL;
+float hvscroll_slopes_left[] = PLC_HVSCROLL_SLOPE_BOUNDS_LEFT;
+float hvscroll_slopes_right[] = PLC_HVSCROLL_SLOPE_BOUNDS_RIGHT;
+bool hvscroll_scroll_horizontally = false;
+bool hvscroll_direction_determined = false;
+int16_t hvscroll_move_h = 0;
+int16_t hvscroll_move_v = 0;
 
 #ifdef ENCODER_ENABLE
 uint16_t lastScroll        = 0; // Previous confirmed wheel event
@@ -143,6 +172,19 @@ void enable_hscroll(void) {
         is_hscroll_enabled ^= 1;
 }
 
+void toggle_hvscroll(void) {
+    is_hvscroll_enabled ^= 1;
+}
+
+void disable_hvscroll(void) {
+    is_hvscroll_enabled = false;
+}
+
+void enable_hvscroll(void) {
+    if (!is_hscroll_enabled)
+        is_hvscroll_enabled ^= 1;
+}
+
 void toggle_drag_scroll(void) {
     is_drag_scroll ^= 1;
 }
@@ -168,15 +210,51 @@ void cycle_dpi(void) {
 
 report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
     if (is_drag_scroll) {
-        if (is_hscroll_enabled) {
-            scroll_accumulated_h += (float)mouse_report.x / PLOOPY_DRAGSCROLL_DIVISOR_H;
-        }
+        scroll_accumulated_h += (float)mouse_report.x / PLOOPY_DRAGSCROLL_DIVISOR_H;
         scroll_accumulated_v += (float)mouse_report.y / PLOOPY_DRAGSCROLL_DIVISOR_V;
 
-        // Assign integer parts of accumulated scroll values to the mouse report
-        if (is_hscroll_enabled) {
-            mouse_report.h = (int8_t)scroll_accumulated_h;
+        if (is_hvscroll_enabled) {
+            if (!hvscroll_direction_determined &&
+                hvscroll_move_h * hvscroll_move_h + hvscroll_move_v * hvscroll_move_v < PLC_HVSCROLL_DELAY_DIST_SQUARED) {
+                if (mouse_report.x < 0) {
+                    hvscroll_move_h -= mouse_report.x;
+                } else {
+                    hvscroll_move_h += mouse_report.x;
+                }
+                hvscroll_move_v += mouse_report.y;
+                scroll_accumulated_h = scroll_accumulated_v = 0;
+            } else {
+                if (!hvscroll_direction_determined) {
+                    float slope = (float) hvscroll_move_v / hvscroll_move_h;
+                    if (hvscroll_move_h > 0) {
+                        if (slope < hvscroll_slopes_right[0] || slope > hvscroll_slopes_right[1]) {
+                            hvscroll_scroll_horizontally = false;
+                        } else {
+                            hvscroll_scroll_horizontally = true;
+                        }
+                    } else {
+                        if (slope < hvscroll_slopes_left[0] || slope > hvscroll_slopes_left[1]) {
+                            hvscroll_scroll_horizontally = false;
+                        } else {
+                            hvscroll_scroll_horizontally = true;
+                        }
+                    }
+                    hvscroll_direction_determined = true;
+                }
+                if (hvscroll_scroll_horizontally) {
+                    scroll_accumulated_v = 0;
+                } else {
+                    scroll_accumulated_h = 0;
+                }
+            }
         }
+
+        if (!is_hscroll_enabled) {
+            scroll_accumulated_h = 0;
+        }
+
+        // Assign integer parts of accumulated scroll values to the mouse report
+        mouse_report.h = (int8_t)scroll_accumulated_h;
 #ifdef PLOOPY_DRAGSCROLL_INVERT
         mouse_report.v = -(int8_t)scroll_accumulated_v;
 #else
@@ -221,6 +299,12 @@ bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
 
     if (keycode == TOGGLE_DRAG_SCROLL_LOCK && record->event.pressed) {
         toggle_drag_scroll_lock();
+        if (!is_drag_scroll) {
+            hvscroll_scroll_horizontally = false;
+            hvscroll_direction_determined = false;
+            hvscroll_move_h = 0;
+            hvscroll_move_v = 0;
+        }
     }
 
     if (keycode == DRAG_SCROLL) {
@@ -230,6 +314,13 @@ bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
             }
         } else {
             is_drag_scroll = record->event.pressed;
+
+        }
+        if (!is_drag_scroll) {
+            hvscroll_scroll_horizontally = false;
+            hvscroll_direction_determined = false;
+            hvscroll_move_h = 0;
+            hvscroll_move_v = 0;
         }
     }
 
@@ -246,6 +337,22 @@ bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
     if (keycode == ENABLE_HSCROLL) {
         if (record->event.pressed) {
             enable_hscroll();
+        }
+    }
+
+    if (keycode == TOGGLE_HVSCROLL) {
+        if (record->event.pressed) {
+            toggle_hvscroll();
+        }
+    }
+    if (keycode == DISABLE_HVSCROLL) {
+        if (record->event.pressed) {
+            disable_hvscroll();
+        }
+    }
+    if (keycode == ENABLE_HVSCROLL) {
+        if (record->event.pressed) {
+            enable_hvscroll();
         }
     }
 
