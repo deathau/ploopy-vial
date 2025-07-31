@@ -181,7 +181,7 @@ void disable_hvscroll(void) {
 }
 
 void enable_hvscroll(void) {
-    if (!is_hscroll_enabled)
+    if (!is_hvscroll_enabled)
         is_hvscroll_enabled ^= 1;
 }
 
