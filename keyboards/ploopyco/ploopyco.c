@@ -164,12 +164,11 @@ void toggle_hscroll(void) {
 }
 
 void disable_hscroll(void) {
-    is_hscroll_enabled = false;
+    is_hscroll_enabled = 0;
 }
 
 void enable_hscroll(void) {
-    if (!is_hscroll_enabled)
-        is_hscroll_enabled ^= 1;
+    is_hscroll_enabled = 1;
 }
 
 void toggle_hvscroll(void) {
@@ -177,12 +176,11 @@ void toggle_hvscroll(void) {
 }
 
 void disable_hvscroll(void) {
-    is_hvscroll_enabled = false;
+    is_hvscroll_enabled = 0;
 }
 
 void enable_hvscroll(void) {
-    if (!is_hvscroll_enabled)
-        is_hvscroll_enabled ^= 1;
+    is_hvscroll_enabled = 1;
 }
 
 void toggle_drag_scroll(void) {
@@ -191,15 +189,6 @@ void toggle_drag_scroll(void) {
 
 void toggle_drag_scroll_lock(void) {
     is_drag_scroll = is_drag_scroll_locked = is_drag_scroll_locked ^ 1;
-    /*
-    if (is_drag_scroll_locked) {
-        is_drag_scroll_locked = false;
-        is_drag_scroll = false;
-    } else {
-        is_drag_scroll_locked = true;
-        is_drag_scroll = true;
-    }
-    */
 }
 
 void cycle_dpi(void) {
