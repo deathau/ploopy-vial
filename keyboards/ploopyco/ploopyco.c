@@ -98,6 +98,7 @@ bool hvscroll_scroll_horizontally = false;
 bool hvscroll_direction_determined = false;
 int16_t hvscroll_move_h = 0;
 int16_t hvscroll_move_v = 0;
+uint32_t last_scroll_time = 0;
 
 #ifdef ENCODER_ENABLE
 uint16_t lastScroll        = 0; // Previous confirmed wheel event
@@ -242,17 +243,23 @@ report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
             scroll_accumulated_h = 0;
         }
 
-        // Assign integer parts of accumulated scroll values to the mouse report
-        mouse_report.h = (int8_t)scroll_accumulated_h;
+        if (timer_elapsed32(last_scroll_time) < 10) {
+            mouse_report.h = 0;
+            mouse_report.v = 0;
+        } else {
+            last_scroll_time = timer_read32();
+            // Assign integer parts of accumulated scroll values to the mouse report
+            mouse_report.h = (int8_t)scroll_accumulated_h;
 #ifdef PLOOPY_DRAGSCROLL_INVERT
-        mouse_report.v = -(int8_t)scroll_accumulated_v;
+            mouse_report.v = -(int8_t)scroll_accumulated_v;
 #else
-        mouse_report.v = (int8_t)scroll_accumulated_v;
+            mouse_report.v = (int8_t)scroll_accumulated_v;
 #endif
 
-        // Update accumulated scroll values by subtracting the integer parts
-        scroll_accumulated_h -= (int8_t)scroll_accumulated_h;
-        scroll_accumulated_v -= (int8_t)scroll_accumulated_v;
+            // Update accumulated scroll values by subtracting the integer parts
+            scroll_accumulated_h -= (int8_t)scroll_accumulated_h;
+            scroll_accumulated_v -= (int8_t)scroll_accumulated_v;
+        }
 
         // Clear the X and Y values of the mouse report
         mouse_report.x = 0;
