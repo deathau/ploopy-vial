@@ -37,7 +37,7 @@
 
 #ifndef PLOOPY_DPI_OPTIONS
 #    define PLOOPY_DPI_OPTIONS \
-        { 600, 900, 1200, 1600, 2400 }
+        { 600, 900, 1200, 1400, 1600, 2400 }
 #    ifndef PLOOPY_DPI_DEFAULT
 #        define PLOOPY_DPI_DEFAULT 1
 #    endif
@@ -198,6 +198,17 @@ void cycle_dpi(void) {
     pointing_device_set_cpi(dpi_array[keyboard_config.dpi_config]);
 }
 
+void cycle_dpi_down(void) {
+    if(keyboard_config.dpi_config == 0) {
+        keyboard_config.dpi_config = DPI_OPTION_SIZE - 1;
+    }
+    else {
+        keyboard_config.dpi_config = (keyboard_config.dpi_config - 1);
+    }
+    eeconfig_update_kb(keyboard_config.raw);
+    pointing_device_set_cpi(dpi_array[keyboard_config.dpi_config]);
+}
+
 report_mouse_t pointing_device_task_kb(report_mouse_t mouse_report) {
     if (is_drag_scroll) {
         scroll_accumulated_h += (float)mouse_report.x / PLOOPY_DRAGSCROLL_DIVISOR_H;
@@ -291,6 +302,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t* record) {
 
     if (keycode == DPI_CONFIG && record->event.pressed) {
         cycle_dpi();
+    }
+
+    if (keycode == DPI_DOWN && record->event.pressed) {
+        cycle_dpi_down();
     }
 
     if (keycode == TOGGLE_DRAG_SCROLL_LOCK && record->event.pressed) {

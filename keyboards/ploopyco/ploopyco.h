@@ -39,7 +39,8 @@ enum ploopy_keycodes {
     ENABLE_HSCROLL,
     TOGGLE_HVSCROLL,
     DISABLE_HVSCROLL,
-    ENABLE_HVSCROLL
+    ENABLE_HVSCROLL,
+    DPI_DOWN
 };
 
 bool encoder_update_user(uint8_t index, bool clockwise);
@@ -50,3 +51,4 @@ void toggle_hscroll(void);
 void disable_hscroll(void);
 void enable_hscroll(void);
 void cycle_dpi(void);
+void cycle_dpi_down(void);

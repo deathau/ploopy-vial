@@ -12,7 +12,8 @@
     {"name": "Enable Horizontal Scroll", "title": "Enable Horizontal Scroll", "shortName": "Hscl\nOn"},
     {"name": "Toggle Single-axis Scroll", "title": "Toggle Single-axis Scroll", "shortName": "HVscl\nTogl"},
     {"name": "Disable Single-axis Scroll", "title": "Disable Single-axis Scroll", "shortName": "HVscl\nOff"},
-    {"name": "Enable Single-axis Scroll", "title": "Enable Single-axis Scroll", "shortName": "HVscl\nOn"}
+    {"name": "Enable Single-axis Scroll", "title": "Enable Single-axis Scroll", "shortName": "HVscl\nOn"},
+    {"name": "DPI Down", "title": "DPI Down", "shortName": "DPI\nDN"}
   ],
   "matrix": {"rows": 1, "cols": 6},
   "layouts": {
